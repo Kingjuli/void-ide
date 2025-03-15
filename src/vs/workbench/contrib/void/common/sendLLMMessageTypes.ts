@@ -146,7 +146,7 @@ export type OllamaModelResponse = {
 	size_vram: number;
 }
 
-type OpenaiCompatibleModelResponse = {
+export type OpenaiCompatibleModelResponse = {
 	id: string;
 	created: number;
 	object: 'model';

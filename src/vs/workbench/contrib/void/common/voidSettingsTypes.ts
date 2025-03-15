@@ -40,6 +40,10 @@ export const defaultProviderSettings = {
 	groq: {
 		apiKey: '',
 	},
+	lmstudio: {
+		endpoint: 'http://127.0.0.1:1234',
+		apiKey: 'lmstudio',
+	},
 	xAI: {
 		apiKey: ''
 	},
@@ -51,7 +55,7 @@ export const defaultProviderSettings = {
 export type ProviderName = keyof typeof defaultProviderSettings
 export const providerNames = Object.keys(defaultProviderSettings) as ProviderName[]
 
-export const localProviderNames = ['ollama', 'vLLM'] satisfies ProviderName[] // all local names
+export const localProviderNames = ['ollama', 'vLLM', 'lmstudio'] satisfies ProviderName[] // all local names
 export const nonlocalProviderNames = providerNames.filter((name) => !(localProviderNames as string[]).includes(name)) // all non-local names
 
 type CustomSettingName = UnionOfKeys<typeof defaultProviderSettings[ProviderName]>
@@ -139,6 +143,11 @@ export const displayInfoOfProviderName = (providerName: ProviderName): DisplayIn
 			title: 'Groq.com API',
 		}
 	}
+	else if (providerName === 'lmstudio') {
+		return {
+			title: 'LM Studio API',
+		}
+	}
 	else if (providerName === 'xAI') {
 		return {
 			title: 'Grok (xAI)',
@@ -188,13 +197,15 @@ export const displayInfoOfSettingName = (providerName: ProviderName, settingName
 		return {
 			title: providerName === 'ollama' ? 'Endpoint' :
 				providerName === 'vLLM' ? 'Endpoint' :
-					providerName === 'openAICompatible' ? 'baseURL' : // (do not include /chat/completions)
-						'(never)',
+					providerName === 'lmstudio' ? 'Endpoint' : // do not include /v1
+						providerName === 'openAICompatible' ? 'baseURL' : // (do not include /chat/completions)
+							'(never)',
 
 			placeholder: providerName === 'ollama' ? defaultProviderSettings.ollama.endpoint
 				: providerName === 'vLLM' ? defaultProviderSettings.vLLM.endpoint
-					: providerName === 'openAICompatible' ? 'https://my-website.com/v1'
-						: '(never)',
+					: providerName === 'lmstudio' ? `${defaultProviderSettings.lmstudio.endpoint} (Do not include /v1)`
+						: providerName === 'openAICompatible' ? 'https://my-website.com/v1'
+							: '(never)',
 
 			subTextMd: providerName === 'ollama' ? 'If you would like to change this endpoint, please read more about [Endpoints here](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-can-i-expose-ollama-on-my-network).' :
 				providerName === 'vLLM' ? 'If you would like to change this endpoint, please read more about [Endpoints here](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#openai-compatible-server).' :
@@ -274,6 +285,12 @@ export const defaultSettingsOfProvider: SettingsOfProvider = {
 		...defaultCustomSettings,
 		...defaultProviderSettings.groq,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.groq),
+		_didFillInProviderSettings: undefined,
+	},
+	lmstudio: {
+		...defaultCustomSettings,
+		...defaultProviderSettings.lmstudio,
+		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.lmstudio),
 		_didFillInProviderSettings: undefined,
 	},
 	openRouter: { // aggregator

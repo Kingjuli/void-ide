@@ -51,6 +51,11 @@ export const defaultModelsOfProvider = {
 		'llama-3.1-8b-instant',
 		// 'qwen-2.5-coder-32b', // preview mode (experimental)
 	],
+	lmstudio: [ // https://lmstudio.ai/models
+		'qwen2.5-coder-32b',
+		'qwq-32b',
+		'llama-3.3-70b',
+	],
 	// not supporting mistral right now- it's last on Void usage, and a huge pain to set up since it's nonstandard (it supports codestral FIM but it's on v1/fim/completions, etc)
 	// mistral: [ // https://docs.mistral.ai/getting-started/models/models_overview/
 	// 	'codestral-latest',
@@ -589,7 +594,37 @@ const openRouterSettings: ProviderSettings = {
 	modelOptionsFallback: (modelName) => extensiveModelFallback(modelName),
 }
 
+// ---------------- LM STUDIO ----------------
+const lmstudioModelOptions_assumingOpenAICompat = {
+	'qwen2.5-coder-32b': {
+		...openSourceModelOptions_assumingOAICompat['qwen2.5coder'],
+		contextWindow: 128_000,
+		maxOutputTokens: null,
+		cost: { input: 0.0, output: 0.0 },
+	},
+	'llama-3.3-70b': {
+		...openSourceModelOptions_assumingOAICompat['llama3.3'],
+		contextWindow: 128_000,
+		maxOutputTokens: null,
+		cost: { input: 0.0, output: 0.0 },
+	},
+	'qwq-32b': {
+		...openSourceModelOptions_assumingOAICompat['qwq'],
+		contextWindow: 131_072,
+		maxOutputTokens: null,
+		supportsTools: false,
+		cost: { input: 0.0, output: 0.0 },
+	}
+} as const satisfies { [s: string]: ModelOptions }
 
+const lmstudioSettings: ProviderSettings = {
+	modelOptions: lmstudioModelOptions_assumingOpenAICompat,
+	providerReasoningIOSettings: {
+		input: { includeInPayload: { include_reasoning: true } },
+		output: { nameOfFieldInDelta: 'reasoning' },
+	},
+	modelOptionsFallback: (modelName) => extensiveModelFallback(modelName),
+}
 
 
 // ---------------- model settings of everything above ----------------
@@ -609,6 +644,7 @@ const modelSettingsOfProvider: { [providerName in ProviderName]: ProviderSetting
 	vLLM: vLLMSettings,
 	ollama: ollamaSettings,
 	openAICompatible: openaiCompatible,
+	lmstudio: lmstudioSettings,
 
 	// googleVertex: {},
 	// microsoftAzure: {},
